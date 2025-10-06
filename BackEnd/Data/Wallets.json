@@ -1,0 +1,7 @@
+{
+  "Test_Wallet": {
+    "sk": "sk123",
+    "vk": "vk456",
+    "address": "addr789"
+  }
+}
