@@ -169,7 +169,7 @@ async function fetchProfile() {
         const data = await response.json();
         
         if (data.ok) {
-            currentUser = data.user;
+            currentUser = data.user || {};
             showUserInfo();
         } else {
             logout();
@@ -183,12 +183,15 @@ async function fetchProfile() {
 function showAuthControls() {
     document.getElementById('authControls').classList.remove('hidden');
     document.getElementById('userInfo').classList.add('hidden');
+    document.getElementById('mainContent').classList.add('hidden');
 }
 
 function showUserInfo() {
+    if (!currentUser) return;
     document.getElementById('authControls').classList.add('hidden');
     document.getElementById('userInfo').classList.remove('hidden');
-    document.getElementById('userName').textContent = currentUser.username;
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.getElementById('userName').textContent = currentUser.username || 'Unknown';
 }
 
 function showAuthModal(type) {
@@ -239,7 +242,7 @@ async function handleAuth(event) {
             if (type === 'login') {
                 authToken = data.token;
                 localStorage.setItem('authToken', authToken);
-                currentUser = data.user;
+                currentUser = data.user || {};
                 showUserInfo();
                 showNotification('Login Successful', 'success');
             } else {
@@ -300,8 +303,13 @@ function addActivityLog(message) {
 
 // Wallet Functions
 async function loadWallets() {
+    if (!authToken) return;
     try {
-        const response = await fetch(`${API_BASE_URL}/wallets`);
+        const response = await fetch(`${API_BASE_URL}/wallets`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
         const data = await response.json();
         
         if (data.ok) {
@@ -478,7 +486,8 @@ async function createWallet() {
             const response = await fetch(`${API_BASE_URL}/wallet/create`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
                 },
                 body: JSON.stringify({ name })
             });

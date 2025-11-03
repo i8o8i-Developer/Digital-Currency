@@ -236,13 +236,38 @@ def validate_input(schema, data):
 
 @app.route('/wallet/create', methods=['POST'])
 def api_create_wallet():
-    data = request.json or {}
-    valid, errors = validate_input(WalletCreateSchema(), data)
-    if errors:
-        return jsonify({'ok': False, 'error': errors}), 400
-    name = valid.get('name') or f"wallet{int(time.time())}"
-    w = create_wallet(name)
-    return jsonify({'ok': True, 'wallet': w})
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'ok': False, 'error': 'Authentication Required'}), 401
+
+    token = auth_header.split(' ')[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        username = payload['username']
+
+        user = storage.get_user_by_username(username)
+        if not user:
+            return jsonify({'ok': False, 'error': 'User Not Found'}), 404
+
+        data = request.json or {}
+        valid, errors = validate_input(WalletCreateSchema(), data)
+        if errors:
+            return jsonify({'ok': False, 'error': errors}), 400
+        name = valid.get('name') or f"wallet{int(time.time())}"
+        w = create_wallet(name)
+
+        # Add To User's Wallets
+        user_wallets = user.get('wallets', [])
+        if name not in user_wallets:
+            user_wallets.append(name)
+            user['wallets'] = user_wallets
+            storage.save_user(user)
+
+        return jsonify({'ok': True, 'wallet': w})
+    except jwt.ExpiredSignatureError:
+        return jsonify({'ok': False, 'error': 'Token Expired'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'ok': False, 'error': 'Invalid Token'}), 401
 
 @app.route('/wallet/<name>', methods=['GET'])
 def api_get_wallet(name):
@@ -705,8 +730,28 @@ def api_get_balance(name):
 
 @app.route('/wallets', methods=['GET'])
 def api_list_wallets():
-    wallets = storage.list_wallets()
-    return jsonify({'ok': True, 'wallets': wallets})
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'ok': False, 'error': 'Authentication Required'}), 401
+
+    token = auth_header.split(' ')[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        username = payload['username']
+
+        user = storage.get_user_by_username(username)
+        if not user:
+            return jsonify({'ok': False, 'error': 'User Not Found'}), 404
+
+        user_wallet_names = user.get('wallets', [])
+        all_wallets = storage.list_wallets()
+        user_wallets = [w for w in all_wallets if w['name'] in user_wallet_names]
+
+        return jsonify({'ok': True, 'wallets': user_wallets})
+    except jwt.ExpiredSignatureError:
+        return jsonify({'ok': False, 'error': 'Token Expired'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'ok': False, 'error': 'Invalid Token'}), 401
 
 
 # Enhanced Node Endpoints
@@ -795,9 +840,9 @@ def api_login():
 
     # Return User Data Without Password
     user_data = {
-        'username': user['username'],
-        'email': user['email'],
-        'created': user['created'],
+        'username': user.get('username', 'Unknown'),
+        'email': user.get('email', 'Unknown'),
+        'created': user.get('created', 'Unknown'),
         'wallets': user.get('wallets', []),
         'contracts': user.get('contracts', [])
     }
@@ -820,9 +865,9 @@ def api_get_profile():
             return jsonify({'ok': False, 'error': 'User Not Found'}), 404
 
         user_data = {
-            'username': user['username'],
-            'email': user['email'],
-            'created': user['created'],
+            'username': user.get('username', 'Unknown'),
+            'email': user.get('email', 'Unknown'),
+            'created': user.get('created', 'Unknown'),
             'wallets': user.get('wallets', []),
             'contracts': user.get('contracts', [])
         }

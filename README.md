@@ -16,21 +16,7 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
----
-
-## 📋 Table Of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Technology Stack](#technology-stack)
-- [API Documentation](#api-documentation)
-- [Frontend Interface](#frontend-interface)
-- [Configuration](#configuration)
-- [Development](#development)
-- [Contributing](#contributing)
-- [License](#license)
+![I8o8iCoin Web Interface](Image/UI.png)
 
 ---
 
@@ -47,6 +33,32 @@
 ✅ **RESTful API** - Complete Flask Backend With JWT Authentication  
 ✅ **Modern Web UI** - Bright Green Theme With Retro Aesthetics  
 ✅ **Virtual Environment** - Automated Setup With Python Scripts  
+
+---
+
+## 🔄 Recent Updates
+
+### V1.1.0 - Authentication & Privacy Enhancements
+
+- **🔐 User Authentication System**
+  - Implemented Mandatory Login Requirement For Accessing Application Features
+  - JWT-Based Authentication With Secure Token Management
+  - User Registration And Login With Password Hashing
+  
+- **🔒 Wallet Privacy & Security**
+  - Wallets Are Now Attached To Individual Users For Privacy
+  - Users Can Only View And Manage Their Own Wallets
+  - Authentication Required For Wallet Creation And Access
+  
+- **🎨 UI Improvements**
+  - Increased Base Font Size To 20Px For Better Readability
+  - Enhanced User Interface With Login-Protected Main Content
+  - Improved Authentication Flow With Proper Error Handling
+
+- **🛡️ Backend Security**
+  - Added Authentication Middleware To Wallet-Related Endpoints
+  - User Data Isolation And Secure API Access
+  - Enhanced Error Handling And User Feedback
 
 ---
 
