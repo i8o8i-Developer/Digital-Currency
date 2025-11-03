@@ -55,7 +55,7 @@ else:
 
 
 app = Flask(__name__)
-CORS(app, origins=["http://127.0.0.1:5500", "http://localhost:5500"])
+CORS(app, origins=["*"], supports_credentials=True)
 Swagger(app)
 
 SECRET_KEY = secrets.token_hex(32)
@@ -78,9 +78,8 @@ storage.init_db()
 chain = Blockchain()
 peers = PeerNetwork()
 
-# Contract Event Logs Endpoint
-@app.route('/contract/<contract_id>/events', methods=['GET'])
-## JWT Auth Decorator (Moved Above Endpoints)
+
+## JWT Auth Decorator
 def jwt_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -97,6 +96,7 @@ def jwt_required(f):
             return jsonify({'ok': False, 'error': 'Invalid Token'}), 401
         return f(*args, **kwargs)
     return decorated
+
 
 def api_key_required(f):
     @wraps(f)
@@ -187,26 +187,7 @@ def metrics():
     return prometheus_client.generate_latest(), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 # Simple In-Memory Miner Reward (now configurable)
-
 MINING_REWARD = config.get('blockchain.mining_reward', 50)
-
-# JWT Auth Decorator
-def jwt_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({'ok': False, 'error': 'Missing Or Invalid Token'}), 401
-        token = auth_header.split(' ')[1]
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-            request.user = payload['username']
-        except jwt.ExpiredSignatureError:
-            return jsonify({'ok': False, 'error': 'Token Expired'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'ok': False, 'error': 'Invalid Token'}), 401
-        return f(*args, **kwargs)
-    return decorated
 
 # Input Validation Schemas
 class WalletCreateSchema(Schema):
@@ -268,6 +249,13 @@ def api_get_wallet(name):
     w = get_wallet(name)
     if not w:
         return jsonify({'ok': False, 'error': 'Not Found'}), 404
+    
+    # Get wallet balance
+    balance = storage.get_wallet_balance(w['address'])
+    
+    # Add balance to wallet data
+    w['balance'] = balance
+    
     return jsonify({'ok': True, 'wallet': w})
 
 @app.route('/tx/send', methods=['POST'])
@@ -593,6 +581,9 @@ def api_claim_rewards(address):
 
     logger.info(f"Address {address} claimed {rewards} staking rewards")
     return jsonify({'ok': True, 'claimed': rewards})
+
+
+@app.route('/contract/<contract_id>/call', methods=['POST'])
 @limiter.limit("20 Per Minute")
 @require_auth
 @metrics_collector

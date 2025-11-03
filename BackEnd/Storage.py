@@ -1,19 +1,3 @@
-# Contract Event and State Retrieval
-def get_contract_events(contract_id):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute('SELECT * FROM contract_events WHERE contract_id=?', (contract_id,))
-    events = [dict(row) for row in cur.fetchall()]
-    conn.close()
-    return events
-
-def get_contract_state(contract_id):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute('SELECT state FROM contracts WHERE contract_id=?', (contract_id,))
-    row = cur.fetchone()
-    conn.close()
-    return json.loads(row['state']) if row else {}
 """
 Storage.py
 Simple SQLite Storage For Wallets, Blocks, And UTXOs.
@@ -176,6 +160,17 @@ def list_wallets():
             all_wallets.append(wallet)
     
     return all_wallets
+
+
+def get_wallet_balance(address: str) -> int:
+    """Calculate Wallet Balance By Summing All UTXOs For The Address."""
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute('SELECT SUM(value) FROM utxos WHERE address = ?', (address,))
+    result = cur.fetchone()
+    conn.close()
+    
+    return result[0] if result[0] is not None else 0
 
 
 def save_block(idx: int, h: str, prev_hash: str, data: str, nonce: int, timestamp: int):
@@ -510,3 +505,29 @@ def list_stakers():
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
     return rows
+
+
+# Contract Event and State Retrieval
+def get_contract_events(contract_id):
+    """Get All Events For A Contract."""
+    conn = get_conn()
+    cur = conn.cursor()
+    # Check If contract_events Table Exists
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='contract_events'")
+    if not cur.fetchone():
+        conn.close()
+        return []
+    cur.execute('SELECT * FROM contract_events WHERE contract_id=?', (contract_id,))
+    events = [dict(row) for row in cur.fetchall()]
+    conn.close()
+    return events
+
+
+def get_contract_state(contract_id):
+    """Get State For A Contract."""
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute('SELECT state FROM contracts WHERE contract_id=?', (contract_id,))
+    row = cur.fetchone()
+    conn.close()
+    return json.loads(row['state']) if row else {}

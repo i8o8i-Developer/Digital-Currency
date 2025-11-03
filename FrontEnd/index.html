@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I8o8iCoin - Digital Currency System</title>
+    <link rel="stylesheet" href="Css/Retro.css">
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div class="crt-effect"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="pixel-text">i8o8iCoin</span>
+                <span class="subtitle">Digital Currency System</span>
+            </div>
+            <div class="auth-controls" id="authControls">
+                <button class="btn btn-primary" onclick="showAuthModal('login')">Login</button>
+                <button class="btn btn-secondary" onclick="showAuthModal('register')">Register</button>
+            </div>
+            <div class="user-info hidden" id="userInfo">
+                <span class="user-name" id="userName"></span>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="wallets">Wallets</button>
+            <button class="tab-btn" data-tab="transactions">Transactions</button>
+            <button class="tab-btn" data-tab="mining">Mining</button>
+            <button class="tab-btn" data-tab="contracts">Smart Contracts</button>
+            <button class="tab-btn" data-tab="staking">Staking</button>
+            <button class="tab-btn" data-tab="network">Network</button>
+        </nav>
+
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard">
+            <div class="panel">
+                <h2 class="panel-title">System Status</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Blockchain Height</div>
+                        <div class="stat-value" id="blockHeight">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Network Difficulty</div>
+                        <div class="stat-value" id="difficulty">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Mempool Size</div>
+                        <div class="stat-value" id="mempoolSize">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Active Peers</div>
+                        <div class="stat-value" id="activePeers">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Consensus Algorithm</div>
+                        <div class="stat-value" id="consensusAlg">POW</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Contracts</div>
+                        <div class="stat-value" id="contractCount">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2 class="panel-title">Recent Activity</h2>
+                <div class="activity-log" id="activityLog">
+                    <div class="log-entry">System Initialized</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallets Tab -->
+        <div class="tab-content" id="wallets">
+            <div class="panel">
+                <h2 class="panel-title">Wallet Management</h2>
+                <div class="wallet-controls">
+                    <button class="btn btn-primary" onclick="createWallet()">Create New Wallet</button>
+                    <button class="btn btn-secondary" onclick="refreshWallets()">Refresh Wallets</button>
+                </div>
+                <div class="wallet-list" id="walletList">
+                    <!-- Wallets will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div class="tab-content" id="transactions">
+            <div class="panel">
+                <h2 class="panel-title">Send Transaction</h2>
+                <form class="form" id="sendTxForm" onsubmit="sendTransaction(event)">
+                    <div class="form-group">
+                        <label class="form-label">From Wallet</label>
+                        <select class="form-input" id="txFromWallet" required>
+                            <option value="">Select Wallet...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">To Address</label>
+                        <input type="text" class="form-input" id="txToAddress" placeholder="Enter Recipient Address..." required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input type="number" class="form-input" id="txAmount" placeholder="Enter Amount..." min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Send Transaction</button>
+                </form>
+            </div>
+
+            <div class="panel">
+                <h2 class="panel-title">Batch Transactions</h2>
+                <button class="btn btn-secondary" onclick="showBatchTxModal()">Create Batch Transaction</button>
+            </div>
+        </div>
+
+        <!-- Mining Tab -->
+        <div class="tab-content" id="mining">
+            <div class="panel">
+                <h2 class="panel-title">Mining Operations</h2>
+                <div class="mining-controls">
+                    <div class="form-group">
+                        <label class="form-label">Miner Account</label>
+                        <select class="form-input" id="minerSelect">
+                            <option value="">Select Miner...</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="createMiner()">Create Miner Account</button>
+                    <button class="btn btn-success" onclick="startMining()" id="mineBtn">Mine Block</button>
+                </div>
+                <div class="mining-stats">
+                    <h3 class="section-title">Mining Statistics</h3>
+                    <div id="miningStats">
+                        <!-- Mining stats will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Smart Contracts Tab -->
+        <div class="tab-content" id="contracts">
+            <div class="panel">
+                <h2 class="panel-title">Smart Contract Deployment</h2>
+                <button class="btn btn-primary" onclick="showDeployContractModal()">Deploy Contract</button>
+                <button class="btn btn-secondary" onclick="showDeployTokenModal()">Deploy Token</button>
+            </div>
+
+            <div class="panel">
+                <h2 class="panel-title">My Contracts</h2>
+                <div class="contract-list" id="contractList">
+                    <!-- Contracts will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Staking Tab -->
+        <div class="tab-content" id="staking">
+            <div class="panel">
+                <h2 class="panel-title">Staking Management</h2>
+                <div class="staking-controls">
+                    <div class="form-group">
+                        <label class="form-label">Wallet Address</label>
+                        <select class="form-input" id="stakingWallet">
+                            <option value="">Select Wallet...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount To Stake</label>
+                        <input type="number" class="form-input" id="stakeAmount" placeholder="Enter Amount..." min="1">
+                    </div>
+                    <div class="staking-buttons">
+                        <button class="btn btn-primary" onclick="depositStake()">Deposit Stake</button>
+                        <button class="btn btn-warning" onclick="withdrawStake()">Withdraw Stake</button>
+                        <button class="btn btn-success" onclick="claimRewards()">Claim Rewards</button>
+                    </div>
+                </div>
+                <div class="staking-info" id="stakingInfo">
+                    <h3 class="section-title">Staking Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Current Stake:</span>
+                            <span class="info-value" id="currentStake">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Rewards:</span>
+                            <span class="info-value" id="stakingRewards">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Tab -->
+        <div class="tab-content" id="network">
+            <div class="panel">
+                <h2 class="panel-title">Network Management</h2>
+                <div class="network-controls">
+                    <button class="btn btn-primary" onclick="addPeer()">Add Peer</button>
+                    <button class="btn btn-secondary" onclick="refreshPeers()">Refresh Peers</button>
+                </div>
+                <div class="peer-list" id="peerList">
+                    <!-- Peers will be populated here -->
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2 class="panel-title">Consensus Settings</h2>
+                <div class="consensus-controls">
+                    <div class="form-group">
+                        <label class="form-label">Consensus Algorithm</label>
+                        <select class="form-input" id="consensusAlgorithm">
+                            <option value="pow">Proof Of Work (POW)</option>
+                            <option value="pos">Proof Of Stake (POS)</option>
+                            <option value="dpos">Delegated Proof Of Stake (DPOS)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="updateConsensus()">Update Consensus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal hidden" id="authModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('authModal')">&times;</span>
+            <h2 class="modal-title" id="authModalTitle">Login</h2>
+            <form class="form" id="authForm" onsubmit="handleAuth(event)">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="authUsername" required>
+                </div>
+                <div class="form-group" id="authEmailGroup">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="authEmail">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="authPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="authSubmitBtn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Deploy Contract Modal -->
+    <div class="modal hidden" id="deployContractModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('deployContractModal')">&times;</span>
+            <h2 class="modal-title">Deploy Smart Contract</h2>
+            <form class="form" id="deployContractForm" onsubmit="deployContract(event)">
+                <div class="form-group">
+                    <label class="form-label">Contract Code (Hex)</label>
+                    <textarea class="form-input" id="contractCode" rows="5" placeholder="Enter contract bytecode in hexadecimal..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Owner Wallet</label>
+                    <select class="form-input" id="contractOwner" required>
+                        <option value="">Select Owner...</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Deploy Contract</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Deploy Token Modal -->
+    <div class="modal hidden" id="deployTokenModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('deployTokenModal')">&times;</span>
+            <h2 class="modal-title">Deploy ERC20 Token</h2>
+            <form class="form" id="deployTokenForm" onsubmit="deployToken(event)">
+                <div class="form-group">
+                    <label class="form-label">Token Name</label>
+                    <input type="text" class="form-input" id="tokenName" placeholder="My Token" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Token Symbol</label>
+                    <input type="text" class="form-input" id="tokenSymbol" placeholder="MTK" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Decimals</label>
+                    <input type="number" class="form-input" id="tokenDecimals" value="18" min="0" max="18" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Total Supply</label>
+                    <input type="number" class="form-input" id="tokenSupply" placeholder="1000000" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Owner Wallet</label>
+                    <select class="form-input" id="tokenOwner" required>
+                        <option value="">Select Owner...</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Deploy Token</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">I8o8iCoin</div>
+            <div class="footer-links">
+                <a href="https://github.com/i8o8i-Developer" target="_blank" class="footer-link">GitHub Profile</a>
+                <a href="https://github.com/i8o8i-Developer/Digital-Currency" target="_blank" class="footer-link">Project Repository</a>
+                <a href="https://github.com/i8o8i-Developer/Digital-Currency/issues" target="_blank" class="footer-link">Report Issues</a>
+            </div>
+            <div class="footer-info">
+                A Complete Blockchain-Based Digital Currency System<br>
+                With Smart Contracts, Multiple Consensus Algorithms, And Modern Web Interface
+            </div>
+            <div class="footer-copyright">
+                © 2025 I8o8iCoin Digital Currency System<br>
+                Developed By <a href="https://github.com/i8o8i-Developer" target="_blank" class="footer-github">@i8o8i-Developer</a><br>
+                Open Source Project - MIT License
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <script src="Js/App.js"></script>
+</body>
+</html>

@@ -8,7 +8,7 @@ from pathlib import Path
 
 class Config:
     def __init__(self):
-        self.config_dir = Path(__file__).parent / 'config'
+        self.config_dir = Path(__file__).parent / 'Config'
         self.config_dir.mkdir(exist_ok=True)
         self.config_file = self.config_dir / 'i8o8iCoin.json'
         self.defaults = {
